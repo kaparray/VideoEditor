@@ -10,10 +10,10 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^0.1.2
+  permission: ^0.1.1
   camera: ^0.3.0
   path_provider: ^0.5.0
   video_player: ^0.10.0
-
 
 dev_dependencies:
   flutter_test:
@@ -22,3 +22,7 @@ dev_dependencies:
 flutter:
 
   uses-material-design: true
+
+  assets:
+    - assets/images/ic_video_shutter.png
+    - assets/images/ic_stop_video.png

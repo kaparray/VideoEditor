@@ -17,6 +17,11 @@ class _VideoAppState extends State<VideoAppScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {},
+        icon: Icon(Icons.add),
+        label: Text("Upload Video"),
+      ),
       appBar: AppBar(
         title: Text('Video Editor'),
       ),
@@ -38,7 +43,7 @@ class _VideoAppState extends State<VideoAppScreen> {
           children: <Widget>[
             FlatButton(
               child: Text('Gallary'),
-              onPressed: () {},
+              onPressed: () {}, // ToDo 
             ),
             FlatButton(
               child: Text('Record video'),
@@ -50,7 +55,7 @@ class _VideoAppState extends State<VideoAppScreen> {
     );
   }
 
-  Future _recordVideo() async {
+  _recordVideo() async {
     final videoPath = await Navigator.of(context).pushNamed(CAMERA_SCREEN);
     setState(() {
       _videoPath = videoPath;
