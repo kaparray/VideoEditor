@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:video_editor/constants/constatnts.dart';
+import 'package:video_editor/main.dart';
+import 'package:video_editor/ui/screens/camera_screen.dart';
 import 'package:video_editor/ui/utils/fited_box.dart';
+import 'package:image_picker/image_picker.dart';
 
 class UploadVideo extends StatefulWidget {
   @override
@@ -59,7 +61,7 @@ class UploadVideoState extends State<UploadVideo> {
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(16.0)),
             child: Text('Upload video'),
-            onPressed: () {},
+            onPressed: _uploadVideo,
           ),
         ),
         fitedBox(6),
@@ -77,8 +79,17 @@ class UploadVideoState extends State<UploadVideo> {
     );
   }
 
+  _uploadVideo() async {
+    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);
+
+    setState(() {
+      _videoPath = videoPath.uri.toString();
+    });
+  }
+
   _recordVideo() async {
-    final videoPath = await Navigator.of(context).pushNamed(CAMERA_SCREEN);
+    final videoPath = await Navigator.of(context).push(MaterialPageRoute(
+        builder: (BuildContext context) => CameraHomeScreen(cameras)));
     setState(() {
       _videoPath = videoPath;
     });

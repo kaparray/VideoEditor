@@ -6,14 +6,19 @@ import 'package:path_provider/path_provider.dart';
 import 'package:video_editor/ui/screens/video_upload.dart';
 import 'package:video_editor/ui/views/video_grid_view.dart';
 
+
+  StreamController streamController = StreamController.broadcast();
+  List listVideoPath;
+
 class VideoAppScreen extends StatefulWidget {
   @override
   createState() => _VideoAppState();
 }
 
 class _VideoAppState extends State<VideoAppScreen> {
-  List _listVideoPath;
+  
   Widget _centerLocalWidget = CircularProgressIndicator();
+
 
   Future getAllFile() async {
     if (Platform.isAndroid) {
@@ -21,7 +26,8 @@ class _VideoAppState extends State<VideoAppScreen> {
           await getExternalStorageDirectory(); // Only for Aandroid
       final String dirPath = '${extDir.path}/VideoEditor/Videos';
       Stream<FileSystemEntity> a = Directory(dirPath).list();
-      _listVideoPath = await a.toList();
+      listVideoPath = await a.toList();
+      streamController.add(listVideoPath);
     } else if (Platform.isIOS) {
       // ToDo list video in local path for IOS platform
     }
@@ -30,7 +36,7 @@ class _VideoAppState extends State<VideoAppScreen> {
   @override
   void initState() {
     try {
-      getAllFile().then((_) {
+      streamController.stream.listen((_) {
         setState(() {});
       });
     } catch (UnhandledException) {
@@ -39,6 +45,8 @@ class _VideoAppState extends State<VideoAppScreen> {
         style: TextStyle(fontSize: 18),
       );
     }
+    streamController.add(getAllFile());
+
     super.initState();
   }
 
@@ -53,7 +61,7 @@ class _VideoAppState extends State<VideoAppScreen> {
                     fullscreenDialog: true,
                   )).then((val) {
                 setState(() {
-                  _listVideoPath.add(File(val));
+                  listVideoPath.add(File(val));
                 });
               }),
           icon: Icon(Icons.add),
@@ -61,11 +69,11 @@ class _VideoAppState extends State<VideoAppScreen> {
         ),
         appBar: AppBar(title: Text('Video Editor')),
         body: SafeArea(
-          child: _listVideoPath == null
+          child: listVideoPath == null
               ? Center(
                   child: _centerLocalWidget,
                 )
-              : _gridBuilder(_listVideoPath.length),
+              : _gridBuilder(listVideoPath.length),
         ));
   }
 
@@ -73,9 +81,9 @@ class _VideoAppState extends State<VideoAppScreen> {
     return GridView.builder(
       itemCount: length,
       gridDelegate:
-          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 2),
+          SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemBuilder: (BuildContext context, int index) {
-        return VideoGrid(_listVideoPath[index]);
+        return VideoGrid(listVideoPath[index]);
       },
     );
   }

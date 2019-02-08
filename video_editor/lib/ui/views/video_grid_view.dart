@@ -1,5 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:video_editor/ui/screens/main_screen.dart';
+import 'package:video_editor/ui/screens/video_full_screeen.dart';
 import 'package:video_player/video_player.dart';
 
 class VideoGrid extends StatefulWidget {
@@ -14,28 +16,32 @@ class VideoGridState extends State<VideoGrid> {
 
   @override
   void initState() {
-    super.initState();
     _controller = VideoPlayerController.file(widget.file)
       ..initialize().then((_) {
         setState(() {
           _controller
             ..setLooping(true)
-            ..setVolume(0)
-            ..play();
+            ..setVolume(0);
         });
       });
+    super.initState();
   }
 
   @override
   void dispose() {
-    super.dispose();
     _controller.dispose();
+    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: _videoBuild(),
+    return InkWell(
+      onLongPress: () =>
+          streamController.add(_deleteVideo()), // ToDo delite video
+      onTap: () => _openVideoFullScreen(context), // ToDo make redactor video
+      child: Card(
+        child: _videoBuild(),
+      ),
     );
   }
 
@@ -59,5 +65,17 @@ class VideoGridState extends State<VideoGrid> {
                         )
                       : Container(),
                 ))));
+  }
+
+  _openVideoFullScreen(context) {
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (BuildContext context) => VideoFullScreen(widget.file)));
+  }
+
+  _deleteVideo() async {
+    listVideoPath.remove(widget.file);
+    await new Directory(widget.file.path.toString()).delete(recursive: true);
   }
 }

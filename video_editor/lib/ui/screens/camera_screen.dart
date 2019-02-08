@@ -10,7 +10,7 @@ class CameraHomeScreen extends StatefulWidget {
   CameraHomeScreen(this.cameras);
 
   @override
-  createState() => _CameraHomeScreenState();
+  createState() => _CameraHomeScreenState();     
 }
 
 class _CameraHomeScreenState extends State<CameraHomeScreen> {
@@ -159,6 +159,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
       ),
     );
   }
+
 
   void onCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) await controller.dispose();
