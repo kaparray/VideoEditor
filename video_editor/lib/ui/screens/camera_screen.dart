@@ -212,7 +212,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     final String dirPath = '${extDir.path}/VideoEditor/Videos';
     await new Directory(dirPath).create(recursive: true);
     final String filePath = '$dirPath/${timestamp()}.mp4';
-    print('\n\n\n\n\n$filePath   \n\n\n\n\n');
     log(filePath, 'camera');
     if (controller.value.isRecordingVideo) {
       return null;

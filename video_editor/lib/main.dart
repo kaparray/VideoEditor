@@ -1,8 +1,8 @@
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:video_editor/Constants/Constatnts.dart';
-import 'package:video_editor/ui/camera_screen.dart';
-import 'package:video_editor/ui/main_screen.dart';
+import 'package:video_editor/ui/screens/camera_screen.dart';
+import 'package:video_editor/ui/screens/main_screen.dart';
 
 List<CameraDescription> cameras;
 
