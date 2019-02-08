@@ -35,24 +35,29 @@ class VideoGridState extends State<VideoGrid> {
   @override
   Widget build(BuildContext context) {
     return Card(
-      child: Column(
-        children: <Widget>[
-          Container(
-            // this is a Video
-            width: 160,
-            height: 90,
-            child: Center(
-              child: _controller.value.initialized
-                  ? AspectRatio(
-                      aspectRatio: _controller.value.aspectRatio,
-                      child: VideoPlayer(_controller),
-                    )
-                  : Container(),
-            ),
-          ),
-          Text(widget.file.toString()) // Video name
-        ],
-      ),
+      child: _videoBuild(),
     );
+  }
+
+  _videoBuild() {
+    return ClipRRect(
+        borderRadius: BorderRadius.circular(4.0),
+        child: OverflowBox(
+            maxWidth: double.infinity,
+            maxHeight: double.infinity,
+            alignment: Alignment.center,
+            child: FittedBox(
+                fit: BoxFit.cover,
+                alignment: Alignment.center,
+                child: Container(
+                  width: 197.7,
+                  height: 197.7,
+                  child: _controller.value.initialized
+                      ? AspectRatio(
+                          aspectRatio: _controller.value.aspectRatio,
+                          child: VideoPlayer(_controller),
+                        )
+                      : Container(),
+                ))));
   }
 }

@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:video_editor/ui/screens/video_upload.dart';
 import 'package:video_editor/ui/views/video_grid_view.dart';
 
 class VideoAppScreen extends StatefulWidget {
@@ -12,19 +13,32 @@ class VideoAppScreen extends StatefulWidget {
 
 class _VideoAppState extends State<VideoAppScreen> {
   List _listVideoPath;
+  Widget _centerLocalWidget = CircularProgressIndicator();
 
   Future getAllFile() async {
-    final Directory extDir = await getExternalStorageDirectory();
-    final String dirPath = '${extDir.path}/VideoEditor/Videos';
-    Stream<FileSystemEntity> a = Directory(dirPath).list();
-    _listVideoPath = await a.toList();
+    if (Platform.isAndroid) {
+      final Directory extDir =
+          await getExternalStorageDirectory(); // Only for Aandroid
+      final String dirPath = '${extDir.path}/VideoEditor/Videos';
+      Stream<FileSystemEntity> a = Directory(dirPath).list();
+      _listVideoPath = await a.toList();
+    } else if (Platform.isIOS) {
+      // ToDo list video in local path for IOS platform
+    }
   }
 
   @override
   void initState() {
-    getAllFile().then((_) {
-      setState(() {});
-    });
+    try {
+      getAllFile().then((_) {
+        setState(() {});
+      });
+    } catch (UnhandledException) {
+      _centerLocalWidget = Text(
+        'Ooops!\nNo video in app.\nMay be upload video?',
+        style: TextStyle(fontSize: 18),
+      );
+    }
     super.initState();
   }
 
@@ -32,8 +46,16 @@ class _VideoAppState extends State<VideoAppScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () =>
-              print('Test FAB'), //_onImageButtonPressed(ImageSource.gallery),
+          onPressed: () async => await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (BuildContext context) => UploadVideo(),
+                    fullscreenDialog: true,
+                  )).then((val) {
+                setState(() {
+                  _listVideoPath.add(File(val));
+                });
+              }),
           icon: Icon(Icons.add),
           label: Text("Upload Video"),
         ),
@@ -41,7 +63,7 @@ class _VideoAppState extends State<VideoAppScreen> {
         body: SafeArea(
           child: _listVideoPath == null
               ? Center(
-                  child: CircularProgressIndicator(),
+                  child: _centerLocalWidget,
                 )
               : _gridBuilder(_listVideoPath.length),
         ));
