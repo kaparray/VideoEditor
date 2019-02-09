@@ -1,6 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:video_player/video_player.dart';
+import 'package:simple_share/simple_share.dart';
 
 class VideoFullScreen extends StatefulWidget {
   final File file;
@@ -34,12 +36,40 @@ class VideoFullScreenState extends State<VideoFullScreen> {
     super.dispose();
   }
 
+  Future<String> getFilePath() async {
+    String filePath = widget.file.path.toString();
+    try {
+      if (filePath == '') {
+        return "";
+      }
+      return filePath;
+    } on PlatformException catch (e) {
+      print("Error while picking the file: " + e.toString());
+      return null;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     print(widget.file.uri.toString());
     return Scaffold(
       appBar: AppBar(
         title: Text('Editing video'),
+        actions: <Widget>[
+          IconButton(
+            onPressed: () async {
+              final path = await getFilePath();
+              if (path != null && path.isNotEmpty) {
+                final uri = Uri.file(path);
+                SimpleShare.share(
+                    uri: uri.toString(),
+                    title: "Share my file",
+                    msg: "My message");
+              }
+            },
+            icon: Icon(Icons.share),
+          )
+        ],
       ),
       body: SafeArea(
         child: Stack(

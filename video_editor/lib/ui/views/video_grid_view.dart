@@ -1,8 +1,8 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:video_editor/ui/screens/main_screen.dart';
+import 'package:video_editor/blocs/bloc.dart';
 import 'package:video_editor/ui/screens/video_full_screeen.dart';
-import 'package:video_player/video_player.dart';
+import 'package:thumbnails/thumbnails.dart';
 
 class VideoGrid extends StatefulWidget {
   final File file;
@@ -12,32 +12,37 @@ class VideoGrid extends StatefulWidget {
 }
 
 class VideoGridState extends State<VideoGrid> {
-  VideoPlayerController _controller;
 
-  @override
+  String _image;
+
+  Future<String> _noFolder() async {
+    String thumb = await Thumbnails.getThumbnail(
+        thumbnailFolder: '/storage/emulated/0/VideoEditor/ImagePreview',
+        videoFile: widget.file.path.toString(),
+        imageType: ThumbFormat.JPEG,
+        quality: 30);
+    return thumb.toString();
+  }
+
+
+@override
   void initState() {
-    _controller = VideoPlayerController.file(widget.file)
-      ..initialize().then((_) {
-        setState(() {
-          _controller
-            ..setLooping(true)
-            ..setVolume(0);
-        });
+    _noFolder().then((val){
+      _image = val;
+      setState(() {
+        
       });
+    });
     super.initState();
   }
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
+    _noFolder();
     return InkWell(
-      onLongPress: () =>
-          streamController.add(_deleteVideo()), // ToDo delite video
+      onLongPress: () {
+        bloc.deleteVideo(widget.file);
+      },
       onTap: () => _openVideoFullScreen(context), // ToDo make redactor video
       child: Card(
         child: _videoBuild(),
@@ -58,12 +63,7 @@ class VideoGridState extends State<VideoGrid> {
                 child: Container(
                   width: 197.7,
                   height: 197.7,
-                  child: _controller.value.initialized
-                      ? AspectRatio(
-                          aspectRatio: _controller.value.aspectRatio,
-                          child: VideoPlayer(_controller),
-                        )
-                      : Container(),
+                  child: Image.file(File(_image))
                 ))));
   }
 
@@ -72,10 +72,5 @@ class VideoGridState extends State<VideoGrid> {
         context,
         MaterialPageRoute(
             builder: (BuildContext context) => VideoFullScreen(widget.file)));
-  }
-
-  _deleteVideo() async {
-    listVideoPath.remove(widget.file);
-    await new Directory(widget.file.path.toString()).delete(recursive: true);
   }
 }
