@@ -30,7 +30,12 @@ class _VideoAppState extends State<VideoAppScreen> {
                     fullscreenDialog: true,
                   )).then((val) {
                 setState(() {
-                  bloc.saveVideo(File(val));  
+                  if (val != null && val is String)
+                    try {
+                      bloc.saveVideo(File(val));  
+                    } catch (e) {
+                      // ToDo log
+                    }
                 });
               }),
           icon: Icon(Icons.add),

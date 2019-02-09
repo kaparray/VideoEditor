@@ -16,22 +16,18 @@ class VideoGridState extends State<VideoGrid> {
   String _image;
 
   Future<String> _noFolder() async {
-    String thumb = await Thumbnails.getThumbnail(
+    return await Thumbnails.getThumbnail(
         thumbnailFolder: '/storage/emulated/0/VideoEditor/ImagePreview',
         videoFile: widget.file.path.toString(),
         imageType: ThumbFormat.JPEG,
         quality: 30);
-    return thumb.toString();
   }
 
-
-@override
+  @override
   void initState() {
-    _noFolder().then((val){
+    _noFolder().then((val) {
       _image = val;
-      setState(() {
-        
-      });
+      setState(() {});
     });
     super.initState();
   }
@@ -61,10 +57,9 @@ class VideoGridState extends State<VideoGrid> {
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
                 child: Container(
-                  width: 197.7,
-                  height: 197.7,
-                  child: Image.file(File(_image))
-                ))));
+                    width: 197.7,
+                    height: 197.7,
+                    child:  _image != null ?  Image.file(File(_image)) : CircularProgressIndicator()))));
   }
 
   _openVideoFullScreen(context) {

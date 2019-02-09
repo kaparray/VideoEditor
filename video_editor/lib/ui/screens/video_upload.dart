@@ -27,13 +27,18 @@ class UploadVideoState extends State<UploadVideo> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Container(padding: EdgeInsets.all(16), child: _columnWidgets()),
+      body: Builder(
+        builder: (BuildContext _context) {
+          return SafeArea(
+              child: Container(
+                  padding: EdgeInsets.all(16),
+                  child: _columnWidgets(_context)));
+        },
       ),
     );
   }
 
-  _columnWidgets() {
+  _columnWidgets(BuildContext context) {
     return Column(
       children: <Widget>[
         TextField(
@@ -61,7 +66,12 @@ class UploadVideoState extends State<UploadVideo> {
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(16.0)),
             child: Text('Upload video'),
-            onPressed: _uploadVideo,
+            onPressed: () {
+              Scaffold.of(context).showSnackBar(SnackBar(
+                content: Text('Coming soon...'),
+                backgroundColor: Colors.grey[700],
+              ));
+            },
           ),
         ),
         fitedBox(6),
@@ -79,19 +89,19 @@ class UploadVideoState extends State<UploadVideo> {
     );
   }
 
-  _uploadVideo() async {
-    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);
-
-    setState(() {
-      _videoPath = videoPath.uri.toString();
-    });
-  }
-
   _recordVideo() async {
     final videoPath = await Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) => CameraHomeScreen(cameras)));
     setState(() {
       _videoPath = videoPath;
+    });
+  }
+
+  // For load video from device. Not use right now
+  _uploadVideo() async {
+    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);
+    setState(() {
+      _videoPath = videoPath.uri.toString();
     });
   }
 }

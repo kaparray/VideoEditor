@@ -15,16 +15,15 @@ class VideoFullScreen extends StatefulWidget {
 
 class VideoFullScreenState extends State<VideoFullScreen> {
   VideoPlayerController _controller;
+  FadeAnimation imageFadeAnim =
+      FadeAnimation(child: const Icon(Icons.play_arrow, size: 100.0));
 
   @override
   void initState() {
     _controller = VideoPlayerController.file(widget.file)
       ..initialize().then((_) {
         setState(() {
-          _controller
-            ..setLooping(true)
-            ..setVolume(1)
-            ..play();
+          _controller..setVolume(1);
         });
       });
     super.initState();
@@ -74,17 +73,104 @@ class VideoFullScreenState extends State<VideoFullScreen> {
       body: SafeArea(
         child: Stack(
           children: <Widget>[
-            _controller.value.initialized
-                ? AspectRatio(
-                    aspectRatio: _controller.value.aspectRatio,
-                    child: VideoPlayer(_controller),
-                  )
-                : Container(),
-            Text(widget.file.uri.toString().replaceFirst(
-                'file:///storage/emulated/0/VideoEditor/Videos/', ''))
+            Center(
+              child: GestureDetector(
+                child: _controller.value.initialized
+                    ? AspectRatio(
+                        aspectRatio: _controller.value.aspectRatio,
+                        child: VideoPlayer(_controller),
+                      )
+                    : Container(),
+                onTap: () {
+                  if (!_controller.value.initialized) {
+                    return;
+                  }
+                  if (_controller.value.isPlaying) {
+                    imageFadeAnim = FadeAnimation(
+                        child: const Icon(Icons.pause, size: 100.0));
+                    _controller.pause();
+                  } else {
+                    imageFadeAnim = FadeAnimation(
+                        child: const Icon(Icons.play_arrow, size: 100.0));
+                    _controller.play();
+                  }
+                },
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: VideoProgressIndicator(
+                _controller,
+                allowScrubbing: true,
+              ),
+            ),
+            Center(child: imageFadeAnim),
+            Center(
+                child: _controller.value.isBuffering
+                    ? const CircularProgressIndicator()
+                    : null),
           ],
         ),
       ),
     );
+  }
+}
+
+class FadeAnimation extends StatefulWidget {
+  FadeAnimation(
+      {this.child, this.duration = const Duration(milliseconds: 500)});
+
+  final Widget child;
+  final Duration duration;
+
+  @override
+  _FadeAnimationState createState() => _FadeAnimationState();
+}
+
+class _FadeAnimationState extends State<FadeAnimation>
+    with SingleTickerProviderStateMixin {
+  AnimationController animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    animationController =
+        AnimationController(duration: widget.duration, vsync: this);
+    animationController.addListener(() {
+      if (mounted) {
+        setState(() {});
+      }
+    });
+    animationController.forward(from: 0.0);
+  }
+
+  @override
+  void deactivate() {
+    animationController.stop();
+    super.deactivate();
+  }
+
+  @override
+  void didUpdateWidget(FadeAnimation oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.child != widget.child) {
+      animationController.forward(from: 0.0);
+    }
+  }
+
+  @override
+  void dispose() {
+    animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return animationController.isAnimating
+        ? Opacity(
+            opacity: 1.0 - animationController.value,
+            child: widget.child,
+          )
+        : Container();
   }
 }
