@@ -54,67 +54,69 @@ class VideoFullScreenState extends State<VideoFullScreen> {
   Widget build(BuildContext context) {
     print(widget.file.uri.toString());
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Editing video'),
-        actions: <Widget>[
-          IconButton(
-            onPressed: () async {
-              final path = await getFilePath();
-              if (path != null && path.isNotEmpty) {
-                final uri = Uri.file(path);
-                SimpleShare.share(
-                    uri: uri.toString(),
-                    title: "Share my file",
-                    msg: "My message");
-              }
-            },
-            icon: Icon(Icons.share),
-          )
-        ],
-      ),
-      body: SafeArea(
-        child: Stack(
-          children: <Widget>[
-            Center(
-              child: GestureDetector(
-                child: _controller.value.initialized
-                    ? AspectRatio(
-                        aspectRatio: _controller.value.aspectRatio,
-                        child: VideoPlayer(_controller),
-                      )
-                    : Container(),
-                onTap: () {
-                  if (!_controller.value.initialized) {
-                    return;
-                  }
-                  if (_controller.value.isPlaying) {
-                    imageFadeAnim = FadeAnimation(
-                        child: const Icon(Icons.pause, size: 100.0));
-                    _controller.pause();
-                  } else {
-                    imageFadeAnim = FadeAnimation(
-                        child: const Icon(Icons.play_arrow, size: 100.0));
-                    _controller.play();
-                  }
-                },
-              ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: VideoProgressIndicator(
-                _controller,
-                allowScrubbing: true,
-              ),
-            ),
-            Center(child: imageFadeAnim),
-            Center(
-                child: _controller.value.isBuffering
-                    ? const CircularProgressIndicator()
-                    : null),
+        appBar: AppBar(
+          title: Text('Editing video'),
+          actions: <Widget>[
+            IconButton(
+              onPressed: () async {
+                final path = await getFilePath();
+                if (path != null && path.isNotEmpty) {
+                  final uri = Uri.file(path);
+                  SimpleShare.share(
+                      uri: uri.toString(),
+                      title: "Share my file",
+                      msg: "My message");
+                }
+              },
+              icon: Icon(Icons.share),
+            )
           ],
         ),
-      ),
-    );
+        body: SafeArea(
+          child: Hero(
+            tag: 'video',
+            child: Stack(
+              children: <Widget>[
+                Center(
+                  child: GestureDetector(
+                    child: _controller.value.initialized
+                        ? AspectRatio(
+                            aspectRatio: _controller.value.aspectRatio,
+                            child: VideoPlayer(_controller),
+                          )
+                        : Container(),
+                    onTap: () {
+                      if (!_controller.value.initialized) {
+                        return;
+                      }
+                      if (_controller.value.isPlaying) {
+                        imageFadeAnim = FadeAnimation(
+                            child: const Icon(Icons.pause, size: 100.0));
+                        _controller.pause();
+                      } else {
+                        imageFadeAnim = FadeAnimation(
+                            child: const Icon(Icons.play_arrow, size: 100.0));
+                        _controller.play();
+                      }
+                    },
+                  ),
+                ),
+                Align(
+                  alignment: Alignment.bottomCenter,
+                  child: VideoProgressIndicator(
+                    _controller,
+                    allowScrubbing: true,
+                  ),
+                ),
+                Center(child: imageFadeAnim),
+                Center(
+                    child: _controller.value.isBuffering
+                        ? const CircularProgressIndicator()
+                        : null),
+              ],
+            ),
+          ),
+        ));
   }
 }
 
