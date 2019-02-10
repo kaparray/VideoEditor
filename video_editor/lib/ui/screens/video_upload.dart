@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:video_editor/blocs/bloc.dart';
 import 'package:video_editor/main.dart';
 import 'package:video_editor/ui/screens/camera_screen.dart';
 import 'package:video_editor/ui/utils/fited_box.dart';
@@ -92,6 +93,7 @@ class UploadVideoState extends State<UploadVideo> {
   _recordVideo() async {
     final videoPath = await Navigator.of(context).push(MaterialPageRoute(
         builder: (BuildContext context) => CameraHomeScreen(cameras)));
+    await bloc.saveImagePreview(videoPath);
     setState(() {
       _videoPath = videoPath;
     });

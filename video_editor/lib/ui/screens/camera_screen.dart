@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:camera/camera.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:video_editor/ui/utils/log.dart';
 
 class CameraHomeScreen extends StatefulWidget {
   final List<CameraDescription> cameras;
@@ -10,7 +11,7 @@ class CameraHomeScreen extends StatefulWidget {
   CameraHomeScreen(this.cameras);
 
   @override
-  createState() => _CameraHomeScreenState();     
+  createState() => _CameraHomeScreenState();
 }
 
 class _CameraHomeScreenState extends State<CameraHomeScreen> {
@@ -30,7 +31,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     try {
       onCameraSelected(widget.cameras[0]);
     } catch (e) {
-      print('Error Log: ' + e.toString());
+      log(e, 'camera');
     }
     super.initState();
   }
@@ -160,7 +161,6 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     );
   }
 
-
   void onCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) await controller.dispose();
     controller = CameraController(cameraDescription, ResolutionPreset.high);
@@ -181,7 +181,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     if (mounted) setState(() {});
   }
 
-  String timestamp() => new DateTime.now().millisecondsSinceEpoch.toString();
+  String timestamp() => new DateTime.now().microsecondsSinceEpoch.toString();
 
   void setCameraResult() {
     print("Recording Done!");
@@ -240,16 +240,5 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
       return null;
     }
     setCameraResult();
-  }
-
-  void log(e, String type) {
-    if (type == 'Exception')
-      print('Exception log: => Code: ${e.code}\nMessage: ${e.message}');
-    else if (type == 'camera')
-      print('Camera log: => Code: $e');
-    else if (type == 'video')
-      print('Video log: => Code: $e');
-    else
-      print(e);
   }
 }

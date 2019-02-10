@@ -2,7 +2,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_editor/blocs/bloc.dart';
 import 'package:video_editor/ui/screens/video_full_screeen.dart';
-import 'package:thumbnails/thumbnails.dart';
 
 class VideoGrid extends StatefulWidget {
   final File file;
@@ -12,29 +11,13 @@ class VideoGrid extends StatefulWidget {
 }
 
 class VideoGridState extends State<VideoGrid> {
-
-  String _image;
-
-  Future<String> _noFolder() async {
-    return await Thumbnails.getThumbnail(
-        thumbnailFolder: '/storage/emulated/0/VideoEditor/ImagePreview',
-        videoFile: widget.file.path.toString(),
-        imageType: ThumbFormat.JPEG,
-        quality: 30);
-  }
-
   @override
   void initState() {
-    _noFolder().then((val) {
-      _image = val;
-      setState(() {});
-    });
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
-    _noFolder();
     return InkWell(
       onLongPress: () {
         bloc.deleteVideo(widget.file);
@@ -57,9 +40,19 @@ class VideoGridState extends State<VideoGrid> {
                 fit: BoxFit.cover,
                 alignment: Alignment.center,
                 child: Container(
-                    width: 197.7,
-                    height: 197.7,
-                    child:  _image != null ?  Image.file(File(_image)) : CircularProgressIndicator()))));
+                  width: 197.7,
+                  height: 197.7,
+                  child: Image.file(File(widget.file.path
+                      .replaceFirst('Videos', 'ImagePreview')
+                      .replaceFirst('mp4', 'jpg'))),
+                ))));
+  }
+
+  buildImage() async {
+    return Image.file(File(widget.file.path
+        .toString()
+        .replaceFirst('Videos', 'ImagePreview')
+        .replaceFirst('mp4', 'jpg')));
   }
 
   _openVideoFullScreen(context) {

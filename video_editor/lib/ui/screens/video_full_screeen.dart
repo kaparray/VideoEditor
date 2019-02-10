@@ -31,6 +31,8 @@ class VideoFullScreenState extends State<VideoFullScreen> {
 
   @override
   void dispose() {
+    _controller.setVolume(0);
+    _controller.pause();
     _controller.dispose();
     super.dispose();
   }
