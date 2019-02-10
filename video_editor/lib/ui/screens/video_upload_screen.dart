@@ -12,7 +12,18 @@ class UploadVideo extends StatefulWidget {
 
 class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
   String _videoPath;
-  PermissionStatus _status;
+  PermissionStatus _statusStorage;
+  PermissionStatus _statusCamera;
+  PermissionStatus _statusSpeech;
+
+  @override
+  void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.storage)
+        .then(_updateStatus);
+    super.initState();
+  }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
@@ -25,24 +36,36 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
   }
 
   void _updateStatus(PermissionStatus status) {
-    if (status != _status) {
+    if (status != _statusStorage ||
+        status != _statusCamera ||
+        status != _statusSpeech) {
       setState(() {
-        _status = status;
+        _statusStorage = status;
       });
     }
   }
 
-  void _askPermission() {
-    PermissionHandler().requestPermissions(
-        [PermissionGroup.locationWhenInUse]).then(_onStatusRequested);
+  Future<void> _askPermission() async {
+    await PermissionHandler().requestPermissions([
+      PermissionGroup.storage,
+      PermissionGroup.camera,
+      PermissionGroup.speech
+    ]).then(_onStatusRequested);
   }
 
-  void _onStatusRequested(Map<PermissionGroup, PermissionStatus> statuses) {
-    final status = statuses[PermissionGroup.storage];
-    if (status != PermissionStatus.granted) {
-      PermissionHandler().openAppSettings();
-    } else {
-      _updateStatus(status);
+  Future<void> _onStatusRequested(
+      Map<PermissionGroup, PermissionStatus> statuses) async {
+    final statusStorage = statuses[PermissionGroup.storage];
+    final statusCamera = statuses[PermissionGroup.camera];
+    final statusSpeech = statuses[PermissionGroup.speech];
+    if (statusStorage != PermissionStatus.granted) {
+      await PermissionHandler().openAppSettings();
+    } else if (statusStorage == PermissionStatus.granted) {
+      _updateStatus(statusStorage);
+    } else if (statusCamera == PermissionStatus.granted) {
+      _updateStatus(statusCamera);
+    } else if (statusSpeech == PermissionStatus.granted) {
+      _updateStatus(statusSpeech);
     }
   }
 
@@ -78,7 +101,7 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
     );
   }
 
-  _columnWidgets(BuildContext context) {
+  Column _columnWidgets(BuildContext context) {
     return Column(
       children: <Widget>[
         TextField(
@@ -122,16 +145,16 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
             shape: new RoundedRectangleBorder(
                 borderRadius: new BorderRadius.circular(16.0)),
             child: Text('Record video'),
-            onPressed: () => _recordVideo(context),
+            onPressed: () async => await _recordVideo(context),
           ),
         ),
       ],
     );
   }
 
-  _recordVideo(_context) async {
-    _askPermission();
-    if (_status == PermissionStatus.granted) {
+  Future<void> _recordVideo(_context) async {
+    await _askPermission();
+    if (_statusStorage == PermissionStatus.granted) {
       final videoPath = await Navigator.of(context).push(MaterialPageRoute(
           builder: (BuildContext context) => CameraHomeScreen(cameras)));
       await bloc.saveImagePreview(videoPath);
@@ -139,10 +162,10 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
         _videoPath = videoPath;
       });
     } else {
-       Scaffold.of(_context).showSnackBar(SnackBar(
-                content: Text('No permission on your Storage!\nPlease fix it 😄'),
-                backgroundColor: Colors.grey[700],
-              ));
+      Scaffold.of(_context).showSnackBar(SnackBar(
+        content: Text('No permission on your Storage!\nPlease fix it 😄'),
+        backgroundColor: Colors.grey[700],
+      ));
     }
   }
 

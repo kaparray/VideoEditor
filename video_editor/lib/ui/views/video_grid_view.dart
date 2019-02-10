@@ -5,16 +5,14 @@ import 'package:video_editor/ui/screens/video_full_screeen.dart';
 
 class VideoGrid extends StatefulWidget {
   final File file;
-  VideoGrid(this.file);
+  final int index;
+  VideoGrid(this.file, this.index);
+
   @override
-  createState() => VideoGridState();
+  State<VideoGrid> createState() => VideoGridState();
 }
 
 class VideoGridState extends State<VideoGrid> {
-  @override
-  void initState() {
-    super.initState();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,9 +27,9 @@ class VideoGridState extends State<VideoGrid> {
     );
   }
 
-  _videoBuild() {
+  Hero _videoBuild() {
     return Hero(
-      tag: 'video',
+      tag: 'video_${widget.index}',
       child: ClipRRect(
           borderRadius: BorderRadius.circular(4.0),
           child: OverflowBox(
@@ -51,17 +49,17 @@ class VideoGridState extends State<VideoGrid> {
     );
   }
 
-  buildImage() async {
+  Future<Image> buildImage() async {
     return Image.file(File(widget.file.path
         .toString()
         .replaceFirst('Videos', 'ImagePreview')
         .replaceFirst('mp4', 'jpg')));
   }
 
-  _openVideoFullScreen(context) {
+  void _openVideoFullScreen(context) {
     Navigator.push(
         context,
         MaterialPageRoute(
-            builder: (BuildContext context) => VideoFullScreen(widget.file)));
+            builder: (BuildContext context) => VideoFullScreen(widget.file, widget.index)));
   }
 }

@@ -127,7 +127,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     );
   }
 
-  _cameraPreviewWidget() {
+  AspectRatio _cameraPreviewWidget() {
     return AspectRatio(
       aspectRatio: controller.value.aspectRatio,
       child: CameraPreview(controller),
@@ -161,7 +161,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     );
   }
 
-  void onCameraSelected(CameraDescription cameraDescription) async {
+  Future<void> onCameraSelected(CameraDescription cameraDescription) async {
     if (controller != null) await controller.dispose();
     controller = CameraController(cameraDescription, ResolutionPreset.high);
 

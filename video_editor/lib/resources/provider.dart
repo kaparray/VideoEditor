@@ -4,7 +4,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:thumbnails/thumbnails.dart';
 
 class CustomProvider {
-  getMyVideo() async {
+  Future getMyVideo() async {
     if (Platform.isAndroid) {
       final Directory extDir =
           await getExternalStorageDirectory(); // Only for Aandroid
@@ -16,7 +16,7 @@ class CustomProvider {
     }
   }
 
-  saveImagePreview(path) async {
+  Future saveImagePreview(path) async {
     await Thumbnails.getThumbnail(
         thumbnailFolder: '/storage/emulated/0/VideoEditor/ImagePreview',
         videoFile: path,
@@ -24,7 +24,7 @@ class CustomProvider {
         quality: 30);
   }
 
-  deleteMyVideo(File file) async {
+  Future deleteMyVideo(File file) async {
     await new Directory(file.path.toString()).delete(recursive: true);
     return await getMyVideo();
   }

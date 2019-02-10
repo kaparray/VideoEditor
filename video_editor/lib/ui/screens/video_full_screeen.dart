@@ -6,11 +6,12 @@ import 'package:simple_share/simple_share.dart';
 
 class VideoFullScreen extends StatefulWidget {
   final File file;
+  final int index;
 
-  VideoFullScreen(this.file);
+  VideoFullScreen(this.file, this.index);
 
   @override
-  createState() => VideoFullScreenState();
+  State<VideoFullScreen> createState() => VideoFullScreenState();
 }
 
 class VideoFullScreenState extends State<VideoFullScreen> {
@@ -74,7 +75,7 @@ class VideoFullScreenState extends State<VideoFullScreen> {
         ),
         body: SafeArea(
           child: Hero(
-            tag: 'video',
+            tag: 'video_${widget.index}',
             child: Stack(
               children: <Widget>[
                 Center(

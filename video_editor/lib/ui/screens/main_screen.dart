@@ -6,15 +6,15 @@ import 'package:video_editor/ui/screens/video_upload_screen.dart';
 import 'package:video_editor/ui/utils/log.dart';
 import 'package:video_editor/ui/views/video_grid_view.dart';
 
-
 class VideoAppScreen extends StatefulWidget {
   @override
   createState() => _VideoAppState();
 }
 
 class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
-
-    PermissionStatus _status;
+  PermissionStatus _statusStorage;
+  PermissionStatus _statusCamera;
+  PermissionStatus _statusSpeech;
 
   @override
   void initState() {
@@ -36,28 +36,40 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
   }
 
   void _updateStatus(PermissionStatus status) {
-    if (status != _status) {
+    if (status != _statusStorage ||
+        status != _statusCamera ||
+        status != _statusSpeech) {
       setState(() {
-        _status = status;
+        _statusStorage = status;
       });
     }
   }
 
-  void _askPermission() {
-    PermissionHandler().requestPermissions(
-        [PermissionGroup.locationWhenInUse]).then(_onStatusRequested);
+  Future<void> _askPermission() async {
+    await PermissionHandler().requestPermissions([
+      PermissionGroup.storage,
+      PermissionGroup.camera,
+      PermissionGroup.speech
+    ]).then(_onStatusRequested);
   }
 
-  void _onStatusRequested(Map<PermissionGroup, PermissionStatus> statuses) {
-    final status = statuses[PermissionGroup.storage];
-    if (status != PermissionStatus.granted) {
-      PermissionHandler().openAppSettings();
-    } else {
-      _updateStatus(status);
+  Future<void> _onStatusRequested(
+      Map<PermissionGroup, PermissionStatus> statuses) async {
+    final statusStorage = statuses[PermissionGroup.storage];
+    final statusCamera = statuses[PermissionGroup.camera];
+    final statusSpeech = statuses[PermissionGroup.speech];
+    if (statusStorage != PermissionStatus.granted) {
+      await PermissionHandler().openAppSettings();
+    } else if (statusStorage == PermissionStatus.granted) {
+      _updateStatus(statusStorage);
+    } else if (statusCamera == PermissionStatus.granted) {
+      _updateStatus(statusCamera);
+    } else if (statusSpeech == PermissionStatus.granted) {
+      _updateStatus(statusSpeech);
     }
   }
 
-   @override
+  @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     super.dispose();
@@ -65,6 +77,7 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
+    print('Widget build 123');
     bloc.fetchSavedNews();
     return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
@@ -78,17 +91,21 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
             stream: bloc.video,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               try {
-                if (_status == PermissionStatus.denied)
+                if (_statusStorage == PermissionStatus.denied)
                   return Center(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
-                        Text('No permission on your Storage!\nPlease fix it 😄', textAlign: TextAlign.center),
-                        OutlineButton(onPressed: () => _askPermission(), child: Text('Click me'),)
+                        Text('No permission on your Storage!\nPlease fix it 😄',
+                            textAlign: TextAlign.center),
+                        OutlineButton(
+                          onPressed: () async => await _askPermission(),
+                          child: Text('Click me'),
+                        )
                       ],
                     ),
-                );
+                  );
                 else if (List.castFrom(snapshot.data).length > 0)
                   return _gridBuilder(snapshot.data);
                 else if (List.castFrom(snapshot.data).length == 0)
@@ -105,20 +122,18 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
         ));
   }
 
-  
-
-  _gridBuilder(List data) {
+  GridView _gridBuilder(List data) {
     return GridView.builder(
       itemCount: data.length,
       gridDelegate:
           SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 3),
       itemBuilder: (BuildContext context, int index) {
-        return VideoGrid(data[index]);
+        return VideoGrid(data[index], index);
       },
     );
   }
 
-  _fullScreenDialogUpload() async {
+  Future<void> _fullScreenDialogUpload() async {
     var result = await Navigator.push(
         context,
         MaterialPageRoute(
