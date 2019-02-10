@@ -30,22 +30,25 @@ class VideoGridState extends State<VideoGrid> {
   }
 
   _videoBuild() {
-    return ClipRRect(
-        borderRadius: BorderRadius.circular(4.0),
-        child: OverflowBox(
-            maxWidth: double.infinity,
-            maxHeight: double.infinity,
-            alignment: Alignment.center,
-            child: FittedBox(
-                fit: BoxFit.cover,
-                alignment: Alignment.center,
-                child: Container(
-                  width: 197.7,
-                  height: 197.7,
-                  child: Image.file(File(widget.file.path
-                      .replaceFirst('Videos', 'ImagePreview')
-                      .replaceFirst('mp4', 'jpg'))),
-                ))));
+    return Hero(
+      tag: 'video',
+      child: ClipRRect(
+          borderRadius: BorderRadius.circular(4.0),
+          child: OverflowBox(
+              maxWidth: double.infinity,
+              maxHeight: double.infinity,
+              alignment: Alignment.center,
+              child: FittedBox(
+                  fit: BoxFit.cover,
+                  alignment: Alignment.center,
+                  child: Container(
+                    width: 197.7,
+                    height: 197.7,
+                    child: Image.file(File(widget.file.path
+                        .replaceFirst('Videos', 'ImagePreview')
+                        .replaceFirst('mp4', 'jpg'))),
+                  )))),
+    );
   }
 
   buildImage() async {

@@ -3,7 +3,6 @@ import 'package:video_editor/blocs/bloc.dart';
 import 'package:video_editor/main.dart';
 import 'package:video_editor/ui/screens/camera_screen.dart';
 import 'package:video_editor/ui/utils/fited_box.dart';
-import 'package:image_picker/image_picker.dart';
 
 class UploadVideo extends StatefulWidget {
   @override
@@ -99,11 +98,14 @@ class UploadVideoState extends State<UploadVideo> {
     });
   }
 
-  // For load video from device. Not use right now
-  _uploadVideo() async {
-    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);
-    setState(() {
-      _videoPath = videoPath.uri.toString();
-    });
-  }
+  ////////////////////////////////////////////////////////////////////////////////////
+  //                For load video from device. Not use right now                   //
+  ////////////////////////////////////////////////////////////////////////////////////
+  //  _uploadVideo() async {                                                        //
+  //    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);   //
+  //    setState(() {                                                               //
+  //      _videoPath = videoPath.uri.toString();                                    //
+  //    });                                                                         //
+  //  }                                                                             //
+  ////////////////////////////////////////////////////////////////////////////////////
 }
