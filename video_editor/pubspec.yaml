@@ -17,6 +17,7 @@ dependencies:
   thumbnails: ^1.0.1
   simple_share: ^0.0.1+3
   file_picker: ^1.1.1
+  permission_handler: ^2.1.2
 
 dev_dependencies:
   flutter_test:

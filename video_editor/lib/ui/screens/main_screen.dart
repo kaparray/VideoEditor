@@ -1,24 +1,70 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:video_editor/blocs/bloc.dart';
-import 'package:video_editor/ui/screens/video_upload.dart';
+import 'package:video_editor/ui/screens/video_upload_screen.dart';
 import 'package:video_editor/ui/utils/log.dart';
 import 'package:video_editor/ui/views/video_grid_view.dart';
+
 
 class VideoAppScreen extends StatefulWidget {
   @override
   createState() => _VideoAppState();
 }
 
-class _VideoAppState extends State<VideoAppScreen> {
+class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
+
+    PermissionStatus _status;
+
   @override
   void initState() {
+    WidgetsBinding.instance.addObserver(this);
+    PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.storage)
+        .then(_updateStatus);
     super.initState();
   }
 
   @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    print(state);
+    if (state == AppLifecycleState.resumed) {
+      PermissionHandler()
+          .checkPermissionStatus(PermissionGroup.storage)
+          .then(_updateStatus);
+    }
+  }
+
+  void _updateStatus(PermissionStatus status) {
+    if (status != _status) {
+      setState(() {
+        _status = status;
+      });
+    }
+  }
+
+  void _askPermission() {
+    PermissionHandler().requestPermissions(
+        [PermissionGroup.locationWhenInUse]).then(_onStatusRequested);
+  }
+
+  void _onStatusRequested(Map<PermissionGroup, PermissionStatus> statuses) {
+    final status = statuses[PermissionGroup.storage];
+    if (status != PermissionStatus.granted) {
+      PermissionHandler().openAppSettings();
+    } else {
+      _updateStatus(status);
+    }
+  }
+
+   @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    setState(() {});
     bloc.fetchSavedNews();
     return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
@@ -32,11 +78,22 @@ class _VideoAppState extends State<VideoAppScreen> {
             stream: bloc.video,
             builder: (BuildContext context, AsyncSnapshot snapshot) {
               try {
-                if (List.castFrom(snapshot.data).length > 0)
+                if (_status == PermissionStatus.denied)
+                  return Center(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: <Widget>[
+                        Text('No permission on your Storage!\nPlease fix it 😄', textAlign: TextAlign.center),
+                        OutlineButton(onPressed: () => _askPermission(), child: Text('Click me'),)
+                      ],
+                    ),
+                );
+                else if (List.castFrom(snapshot.data).length > 0)
                   return _gridBuilder(snapshot.data);
                 else if (List.castFrom(snapshot.data).length == 0)
                   return Center(
-                    child: Text('No data!'),
+                    child: Text('No data in storage!'),
                   );
               } on NoSuchMethodError {
                 return Center(
@@ -47,6 +104,8 @@ class _VideoAppState extends State<VideoAppScreen> {
           ),
         ));
   }
+
+  
 
   _gridBuilder(List data) {
     return GridView.builder(
