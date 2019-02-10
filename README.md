@@ -1,10 +1,6 @@
 # VideoEditor
 Video editor dy flutter
 
-
-# NewsApp
-News app in Flutter with BLOC pattern
-
 This example uses a Video player, Camera, Directory, Thumbnails, GridData, ClipRRect, Card, Progress Indicator, Card, Column, Row, Container, InkWell, BoxDecoration.
 
 
