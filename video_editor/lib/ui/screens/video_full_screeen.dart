@@ -66,7 +66,7 @@ class VideoFullScreenState extends State<VideoFullScreen> {
                   SimpleShare.share(
                       uri: uri.toString(),
                       title: "Share my file",
-                      msg: "My message");
+                      msg: "Check this video out");
                 }
               },
               icon: Icon(Icons.share),

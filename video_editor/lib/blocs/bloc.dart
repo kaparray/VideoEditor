@@ -8,7 +8,7 @@ class Bloc {
   var _controllerVideo = StreamController.broadcast();
   Stream get video => _controllerVideo.stream;
 
-  Future fetchSavedNews() async =>
+  Future fetchSavedVideo() async =>
       _controllerVideo.add(await _repository.getSavedVideo());
 
   Future deleteVideo(File file) async =>

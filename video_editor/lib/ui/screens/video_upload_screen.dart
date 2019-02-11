@@ -4,6 +4,7 @@ import 'package:video_editor/blocs/bloc.dart';
 import 'package:video_editor/main.dart';
 import 'package:video_editor/ui/screens/camera_screen.dart';
 import 'package:video_editor/ui/utils/fited_box.dart';
+import 'package:video_editor/ui/utils/log.dart';
 
 class UploadVideo extends StatefulWidget {
   @override
@@ -21,27 +22,47 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
     WidgetsBinding.instance.addObserver(this);
     PermissionHandler()
         .checkPermissionStatus(PermissionGroup.storage)
-        .then(_updateStatus);
+        .then(_updateStatusStorage);
+    PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.camera)
+        .then(_updateStatusCamera);
+    PermissionHandler()
+        .checkPermissionStatus(PermissionGroup.microphone)
+        .then(_updateStatusSpeech);
     super.initState();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    print(state);
+    log(state, 'state');
     if (state == AppLifecycleState.resumed) {
       PermissionHandler()
           .checkPermissionStatus(PermissionGroup.storage)
-          .then(_updateStatus);
+          .then(_updateStatusStorage);
+      PermissionHandler()
+          .checkPermissionStatus(PermissionGroup.camera)
+          .then(_updateStatusCamera);
+      PermissionHandler()
+          .checkPermissionStatus(PermissionGroup.microphone)
+          .then(_updateStatusSpeech);
     }
   }
 
-  void _updateStatus(PermissionStatus status) {
-    if (status != _statusStorage ||
-        status != _statusCamera ||
-        status != _statusSpeech) {
-      setState(() {
-        _statusStorage = status;
-      });
+  void _updateStatusSpeech(PermissionStatus status) {
+    if (status != _statusSpeech) {
+      _statusSpeech = status;
+    }
+  }
+
+  void _updateStatusCamera(PermissionStatus status) {
+    if (status != _statusCamera) {
+      _statusCamera = status;
+    }
+  }
+
+  void _updateStatusStorage(PermissionStatus status) {
+    if (status != _statusStorage) {
+      _statusStorage = status;
     }
   }
 
@@ -53,19 +74,19 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
     ]).then(_onStatusRequested);
   }
 
-  Future<void> _onStatusRequested(
-      Map<PermissionGroup, PermissionStatus> statuses) async {
+  void _onStatusRequested(Map<PermissionGroup, PermissionStatus> statuses) {
     final statusStorage = statuses[PermissionGroup.storage];
     final statusCamera = statuses[PermissionGroup.camera];
     final statusSpeech = statuses[PermissionGroup.speech];
-    if (statusStorage != PermissionStatus.granted) {
-      await PermissionHandler().openAppSettings();
-    } else if (statusStorage == PermissionStatus.granted) {
-      _updateStatus(statusStorage);
-    } else if (statusCamera == PermissionStatus.granted) {
-      _updateStatus(statusCamera);
-    } else if (statusSpeech == PermissionStatus.granted) {
-      _updateStatus(statusSpeech);
+
+    if (statusStorage == PermissionStatus.granted) {
+      _updateStatusStorage(statusStorage);
+    }
+    if (statusCamera == PermissionStatus.granted) {
+      _updateStatusCamera(statusCamera);
+    }
+    if (statusSpeech == PermissionStatus.granted) {
+      _updateStatusSpeech(statusSpeech);
     }
   }
 
@@ -154,17 +175,33 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
 
   Future<void> _recordVideo(_context) async {
     await _askPermission();
-    if (_statusStorage == PermissionStatus.granted) {
+
+    if (_statusStorage == PermissionStatus.granted &&
+        _statusCamera == PermissionStatus.granted &&
+        _statusSpeech == PermissionStatus.granted) {
       final videoPath = await Navigator.of(context).push(MaterialPageRoute(
           builder: (BuildContext context) => CameraHomeScreen(cameras)));
-      await bloc.saveImagePreview(videoPath);
-      setState(() {
-        _videoPath = videoPath;
-      });
+      if (videoPath == false) {
+        Scaffold.of(_context).showSnackBar(SnackBar(
+          content: Text(
+            'No permission on your Camera or Microphone!\nPlease fix it 😄',
+            textAlign: TextAlign.center,
+          ),
+          backgroundColor: Colors.grey[700],
+          duration: Duration(milliseconds: 1500),
+        ));
+      } else {
+        await bloc.saveImagePreview(videoPath);
+        setState(() {
+          _videoPath = videoPath;
+        });
+      }
     } else {
       Scaffold.of(_context).showSnackBar(SnackBar(
-        content: Text('No permission on your Storage!\nPlease fix it 😄'),
+        content: Text('No permission on your Storage!\nPlease fix it 😄',
+            textAlign: TextAlign.center),
         backgroundColor: Colors.grey[700],
+        duration: Duration(milliseconds: 1500),
       ));
     }
   }

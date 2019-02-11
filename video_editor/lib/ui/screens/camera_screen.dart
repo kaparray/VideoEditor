@@ -175,6 +175,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     try {
       await controller.initialize();
     } on CameraException catch (e) {
+      Navigator.pop(context, false);
       log(e, 'camera');
     }
 
@@ -222,6 +223,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
       videoPath = filePath;
       await controller.startVideoRecording(filePath);
     } on CameraException catch (e) {
+      Navigator.pop(context);
       log(e, 'Exception');
       return null;
     }
@@ -236,6 +238,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     try {
       await controller.stopVideoRecording();
     } on CameraException catch (e) {
+      Navigator.pop(context);
       log(e, 'Exception');
       return null;
     }

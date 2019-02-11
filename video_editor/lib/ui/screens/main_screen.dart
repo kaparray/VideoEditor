@@ -13,15 +13,14 @@ class VideoAppScreen extends StatefulWidget {
 
 class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
   PermissionStatus _statusStorage;
-  PermissionStatus _statusCamera;
-  PermissionStatus _statusSpeech;
 
   @override
   void initState() {
+    bloc.fetchSavedVideo();
     WidgetsBinding.instance.addObserver(this);
     PermissionHandler()
         .checkPermissionStatus(PermissionGroup.storage)
-        .then(_updateStatus);
+        .then(_updateStatusStorage);
     super.initState();
   }
 
@@ -31,16 +30,15 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
     if (state == AppLifecycleState.resumed) {
       PermissionHandler()
           .checkPermissionStatus(PermissionGroup.storage)
-          .then(_updateStatus);
+          .then(_updateStatusStorage);
     }
   }
 
-  void _updateStatus(PermissionStatus status) {
-    if (status != _statusStorage ||
-        status != _statusCamera ||
-        status != _statusSpeech) {
+  void _updateStatusStorage(PermissionStatus status) {
+    if (status != _statusStorage) {
       setState(() {
         _statusStorage = status;
+        bloc.fetchSavedVideo();
       });
     }
   }
@@ -48,24 +46,16 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
   Future<void> _askPermission() async {
     await PermissionHandler().requestPermissions([
       PermissionGroup.storage,
-      PermissionGroup.camera,
-      PermissionGroup.speech
     ]).then(_onStatusRequested);
   }
 
   Future<void> _onStatusRequested(
       Map<PermissionGroup, PermissionStatus> statuses) async {
     final statusStorage = statuses[PermissionGroup.storage];
-    final statusCamera = statuses[PermissionGroup.camera];
-    final statusSpeech = statuses[PermissionGroup.speech];
     if (statusStorage != PermissionStatus.granted) {
       await PermissionHandler().openAppSettings();
     } else if (statusStorage == PermissionStatus.granted) {
-      _updateStatus(statusStorage);
-    } else if (statusCamera == PermissionStatus.granted) {
-      _updateStatus(statusCamera);
-    } else if (statusSpeech == PermissionStatus.granted) {
-      _updateStatus(statusSpeech);
+      _updateStatusStorage(statusStorage);
     }
   }
 
@@ -77,8 +67,6 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    print('Widget build 123');
-    bloc.fetchSavedNews();
     return Scaffold(
         floatingActionButton: FloatingActionButton.extended(
           onPressed: _fullScreenDialogUpload,
@@ -143,7 +131,7 @@ class _VideoAppState extends State<VideoAppScreen> with WidgetsBindingObserver {
 
     if (result != null && result is String)
       try {
-        await bloc.fetchSavedNews();
+        await bloc.fetchSavedVideo();
       } catch (e) {
         log(e, 'saveVideo');
       }
