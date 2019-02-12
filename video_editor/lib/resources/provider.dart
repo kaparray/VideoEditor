@@ -25,7 +25,12 @@ class CustomProvider {
   }
 
   Future deleteMyVideo(File file) async {
-    await new Directory(file.path.toString()).delete(recursive: true);
+    await Directory(file.path.toString()).delete(recursive: true);
+    await Directory(file.path
+            .toString()
+            .replaceFirst('Videos', 'ImagePreview')
+            .replaceFirst('mp4', 'jpeg'))
+        .delete(recursive: true);
     return await getMyVideo();
   }
 }

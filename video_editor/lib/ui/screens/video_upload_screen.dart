@@ -5,6 +5,7 @@ import 'package:video_editor/main.dart';
 import 'package:video_editor/ui/screens/camera_screen.dart';
 import 'package:video_editor/ui/utils/fited_box.dart';
 import 'package:video_editor/ui/utils/log.dart';
+import 'package:video_editor/ui/utils/snack_bar.dart';
 
 class UploadVideo extends StatefulWidget {
   @override
@@ -179,41 +180,29 @@ class UploadVideoState extends State<UploadVideo> with WidgetsBindingObserver {
     if (_statusStorage == PermissionStatus.granted &&
         _statusCamera == PermissionStatus.granted &&
         _statusSpeech == PermissionStatus.granted) {
+
       final videoPath = await Navigator.of(context).push(MaterialPageRoute(
           builder: (BuildContext context) => CameraHomeScreen(cameras)));
-      if (videoPath == false) {
-        Scaffold.of(_context).showSnackBar(SnackBar(
-          content: Text(
-            'No permission on your Camera or Microphone!\nPlease fix it 😄',
-            textAlign: TextAlign.center,
-          ),
-          backgroundColor: Colors.grey[700],
-          duration: Duration(milliseconds: 1500),
-        ));
-      } else {
-        await bloc.saveImagePreview(videoPath);
-        setState(() {
-          _videoPath = videoPath;
-        });
-      }
-    } else {
-      Scaffold.of(_context).showSnackBar(SnackBar(
-        content: Text('No permission on your Storage!\nPlease fix it 😄',
-            textAlign: TextAlign.center),
-        backgroundColor: Colors.grey[700],
-        duration: Duration(milliseconds: 1500),
-      ));
-    }
+      await bloc.saveImagePreview(videoPath);
+      setState(() {
+        _videoPath = videoPath;
+      });
+    } else if (_statusStorage != PermissionStatus.granted)
+      Scaffold.of(_context).showSnackBar(snackBarCustom('No permission on your Storage!\nPlease fix it 😄'));
+    else if (_statusCamera != PermissionStatus.granted) 
+      Scaffold.of(_context).showSnackBar(snackBarCustom('No permission on your Camera!\nPlease fix it 😄'));
+    else if (_statusSpeech != PermissionStatus.granted)
+      Scaffold.of(_context).showSnackBar(snackBarCustom('No permission on your microphone!\nPlease fix it 😄'));
   }
-
-  ////////////////////////////////////////////////////////////////////////////////////
-  //                For load video from device. Not use right now                   //
-  ////////////////////////////////////////////////////////////////////////////////////
-  //  _uploadVideo() async {                                                        //
-  //    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);   //
-  //    setState(() {                                                               //
-  //      _videoPath = videoPath.uri.toString();                                    //
-  //    });                                                                         //
-  //  }                                                                             //
-  ////////////////////////////////////////////////////////////////////////////////////
 }
+
+////////////////////////////////////////////////////////////////////////////////////
+//                For load video from device. Not use right now                   //
+////////////////////////////////////////////////////////////////////////////////////
+//  _uploadVideo() async {                                                        //
+//    var videoPath = await ImagePicker.pickVideo(source: ImageSource.gallery);   //
+//    setState(() {                                                               //
+//      _videoPath = videoPath.uri.toString();                                    //
+//    });                                                                         //
+//  }                                                                             //
+////////////////////////////////////////////////////////////////////////////////////

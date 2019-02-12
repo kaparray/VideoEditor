@@ -175,7 +175,7 @@ class _CameraHomeScreenState extends State<CameraHomeScreen> {
     try {
       await controller.initialize();
     } on CameraException catch (e) {
-      Navigator.pop(context, false);
+      Navigator.pop(context);
       log(e, 'camera');
     }
 
